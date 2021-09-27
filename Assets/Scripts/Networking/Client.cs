@@ -16,9 +16,9 @@ public class Client : MonoBehaviour
     public GameObject server;
     private void Awake()
     {
-        string prefIp = PlayerPrefs.GetString("ip");
+        string prefIp = PlayerPrefs.GetString("ip", "127.0.0.1");
 
-        if (PlayerPrefs.GetInt("isServer") == 1)
+        if (PlayerPrefs.GetInt("isServer", 1) == 1)
         {
             server.SetActive(true);
             _remoteAddr = new IPEndPoint(IPAddress.Parse("127.0.0.1"), GameServer.Port);
