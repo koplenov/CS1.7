@@ -1,37 +1,38 @@
-﻿
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-
-public class Utils
+namespace Utils
 {
-    #region Serialization
-
-    // Convert an object to a byte array
-    public static byte[] ObjectToByteArray(Object obj)
+    public class Data
     {
-        if (obj == null)
-            return null;
+        #region Serialization
 
-        BinaryFormatter bf = new BinaryFormatter();
-        MemoryStream ms = new MemoryStream();
-        bf.Serialize(ms, obj);
+        // Convert an object to a byte array
+        public static byte[] ObjectToByteArray(Object obj)
+        {
+            if (obj == null)
+                return null;
 
-        return ms.ToArray();
-    }
+            BinaryFormatter bf = new BinaryFormatter();
+            MemoryStream ms = new MemoryStream();
+            bf.Serialize(ms, obj);
 
-    // Convert a byte array to an Object
-    public static Object ByteArrayToObject(byte[] arrBytes)
-    {
-        MemoryStream memStream = new MemoryStream();
-        BinaryFormatter binForm = new BinaryFormatter();
-        memStream.Write(arrBytes, 0, arrBytes.Length);
-        memStream.Seek(0, SeekOrigin.Begin);
-        Object obj = (Object) binForm.Deserialize(memStream);
+            return ms.ToArray();
+        }
 
-        return obj;
-    }
+        // Convert a byte array to an Object
+        public static Object ByteArrayToObject(byte[] arrBytes)
+        {
+            MemoryStream memStream = new MemoryStream();
+            BinaryFormatter binForm = new BinaryFormatter();
+            memStream.Write(arrBytes, 0, arrBytes.Length);
+            memStream.Seek(0, SeekOrigin.Begin);
+            Object obj = (Object) binForm.Deserialize(memStream);
 
-    #endregion
+            return obj;
+        }
+
+        #endregion
+    }   
 }
