@@ -1,36 +1,35 @@
-using System;
+using Networking;
 using UnityEngine;
+using Utils;
+using Network = Utils.Network;
 
 public class Sample : MonoBehaviour
 {
-    #region ID
-    class ID
-    {
-        public const byte Position = 0;
-        public const byte Message = 1;
-    }
-    #endregion
-
     void ExampleForLeha()
     {
         NetPlayer netPlayer = new NetPlayer("koplenov");
 
         // content bytes
-        byte[] testByted = Utils.ObjectToByteArray(netPlayer);
+        byte[] testByted = Data.ObjectToByteArray(netPlayer);
 
         // bytes to send or bytes from server
-        byte[] chanalledBytes = Packer.CombinePacket(ID.Position, testByted);
-
-        byte[] clearData = new ArraySegment<byte>(chanalledBytes, 1, chanalledBytes.Length).Array;
-
-        switch (chanalledBytes[0])
+        byte[] packetBytes = Packer.CombinePacket(ChanelID.PlayerPosition, testByted);
+        
+        var unpackedBytes = Packer.UnPack(packetBytes);
+        int chanelID = unpackedBytes.chanelID;
+        byte[] data = unpackedBytes.data;
+        
+        switch (unpackedBytes.chanelID)
         {
-            case ID.Message:
+            case ChanelID.PlayerPosition:
                 // todo
                 break;
-            case ID.Position:
+            case ChanelID.SpawnDecal:
                 // todo
                 break;
         }
+        
+        // simple send bytes to server
+        Network.SendTcpData(packetBytes);
     }
 }
