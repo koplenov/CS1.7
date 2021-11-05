@@ -13,9 +13,9 @@ public class Hands : MonoBehaviour
     public Weapon knife;
     public Weapon pistol;
     public Weapon mainGun;
-
+    public Selfstate selfState;
     private Weapon curentWeapon;
-
+    
     public GameObject decalGameObject;
     private void Start()
     {
@@ -73,7 +73,9 @@ public class Hands : MonoBehaviour
                 if (hitInfo.collider.CompareTag("NetPlayer"))
                 {
                     NetPlayerData netData = hitInfo.collider.GetComponent<NetPlayerData>();
-                    netData.botHands.ApplyWeapon(2);
+                    GameUtils.SendDamage(Client.nick,netData.nick, 1);
+                    netData.botState.ApplyDamage();
+                    selfState.ApplyDamage();
                     Debug.Log("Fired");
                 }
             }

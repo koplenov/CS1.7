@@ -10,6 +10,7 @@ namespace Networking
         public const int PlayerPosition = 0;
         public const int SpawnDecal = 6;
         public const int ChangeWeapon = 7;
+        public const int Damage = 5;
     }
 
     #endregion
@@ -29,7 +30,7 @@ namespace Networking
             this.HitInfoPoint = hitInfoPoint;
             this.HitInfoNormal = hitInfoNormal;
         }
-        
+
         public Vector3 HitInfoPoint
         {
             get => hitInfoPoint.Vector3;
@@ -39,7 +40,8 @@ namespace Networking
                 hitInfoPoint.y = value.y;
                 hitInfoPoint.z = value.z;
             }
-        }        
+        }
+
         public Vector3 HitInfoNormal
         {
             get => hitInfoNormal.Vector3;
@@ -57,10 +59,27 @@ namespace Networking
     {
         public string nick = String.Empty;
         public int weapon = 0;
+
         public ChangeWeapon(string nick, int weapon)
         {
             this.nick = nick;
             this.weapon = weapon;
+        }
+    }
+
+    [Serializable]
+    public class SendDamage
+    {
+        public string analDamager = String.Empty;
+        public string anal = String.Empty;
+        public int damage = 0;
+
+        //Who whom damaging?
+        public SendDamage(string analDamager, string anal, int damage)
+        {
+            this.analDamager = analDamager;
+            this.anal = anal;
+            this.damage = damage;
         }
     }
 
@@ -99,6 +118,7 @@ namespace Networking
                 rotation.z = value.z;
             }
         }
+
         public Vector3 Position
         {
             get => position.Vector3;
@@ -109,6 +129,7 @@ namespace Networking
                 position.z = value.z;
             }
         }
+
         public Transform Transform
         {
             set

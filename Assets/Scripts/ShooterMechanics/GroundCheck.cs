@@ -29,6 +29,7 @@ public class GroundCheck : MonoBehaviour
             Grounded?.Invoke();
         }
 
+
         // Update isGrounded.
         isGrounded = isGroundedNow;
     }

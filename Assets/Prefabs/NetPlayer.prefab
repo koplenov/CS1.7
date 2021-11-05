@@ -223,6 +223,7 @@ GameObject:
   - component: {fileID: 8835994051076804808}
   - component: {fileID: 8835994051076804809}
   - component: {fileID: 6354139369267910312}
+  - component: {fileID: 1489024790}
   m_Layer: 0
   m_Name: NetPlayer
   m_TagString: NetPlayer
@@ -291,6 +292,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nick: 
   botHands: {fileID: 1174538316246562851}
+  botState: {fileID: 1489024790}
+--- !u!114 &1489024790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8835994051076804810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8c942243161a2f40a2a7b948a9e7b6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hp: 100
+  armor: 0
 --- !u!1 &8835994051392271661
 GameObject:
   m_ObjectHideFlags: 0

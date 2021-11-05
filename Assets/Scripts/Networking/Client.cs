@@ -19,7 +19,7 @@ public class Client : MonoBehaviour
     void Awake()
     {
         Instance = this;
-        
+
         AwakeUdp();
     }
 
@@ -46,7 +46,7 @@ public class Client : MonoBehaviour
         CloseUdp();
         CloseTcp();
     }
-    
+
     #region UDP
 
     private static Thread _listeningThread;
@@ -116,12 +116,11 @@ public class Client : MonoBehaviour
     public Transform YRot;
 
     private NetPlayer bufferPlayer;
-    
+
     public void SendUdpData(byte[] data)
     {
         //_sender.Send(data, data.Length);
         _sender.SendAsync(data, data.Length);
-        
     }
 
     private void FixedUpdateUdp()
@@ -172,7 +171,9 @@ public class Client : MonoBehaviour
         var newPlayer = Instantiate(netPlayerPrefab, player.Position, Quaternion.identity);
         newPlayer.GetComponentInChildren<TextMeshPro>().text = player.nick;
         initedPlayers[player.nick] = newPlayer;
-        dataPlayers[player.nick] = newPlayer.GetComponent<NetPlayerData>();
+        var settings = newPlayer.GetComponent<NetPlayerData>();
+        settings.nick = player.nick;
+        dataPlayers[player.nick] = settings;
     }
 
     private void CloseUdp()
@@ -211,7 +212,6 @@ public class Client : MonoBehaviour
     void StartTcp()
     {
         clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
         // Connect to the specified host.
         string prefIp = PlayerPrefs.GetString("ip", "127.0.0.1");
         IPEndPoint endPoint;
@@ -272,7 +272,7 @@ public class Client : MonoBehaviour
             {
                 return;
             }
-            
+
             try
             {
                 var packet = Packer.UnPack(buffer, received);
@@ -287,10 +287,28 @@ public class Client : MonoBehaviour
                             Debug.Log("Смена оружки на " + changeWeapon.weapon + " у " + changeWeapon.nick);
                             ((NetPlayerData) dataPlayers[changeWeapon.nick]).botHands.ApplyWeapon(changeWeapon.weapon);
                         }
+
                         break;
                     case ChanelID.SpawnDecal:
                         SpawnDecal spawnDecal = (SpawnDecal) Data.ByteArrayToObject(packet.data);
                         hands.SpawnDecal(spawnDecal);
+                        break;
+                    case ChanelID.Damage:
+                        //Хто надамажил меня? и насколько?
+                        SendDamage sendDamage = (SendDamage) Data.ByteArrayToObject(packet.data);
+                        if (sendDamage.analDamager == Client.nick)
+                        {
+                            Debug.Log("Ты попал мужик...");
+                        }
+
+                        if (sendDamage.anal == Client.nick)
+                        {
+                            Debug.Log("Ты маслину поймал мужик...");
+                            hands.selfState.hp -= sendDamage.damage;
+                        }
+
+                        Debug.Log($"anal {sendDamage.anal}, nick {Client.nick} , analDamager {sendDamage.analDamager}");
+
                         break;
                     default:
                         string message = Encoding.Unicode.GetString(buffer);
@@ -298,6 +316,7 @@ public class Client : MonoBehaviour
                         Debug.LogWarningFormat("Это был пакет {0} канала", packet.chanelID);
                         break;
                 }
+
                 //#
             }
             catch (Exception e)

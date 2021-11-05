@@ -8,7 +8,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Menu.unity
     guid: 68a48daed342af641ad23edebfb8e9f0
-  - enabled: 1
+  - enabled: 0
+    path: Assets/Scenes/Dust_gerak24.unity
+    guid: 45ccbce4d13174e44a666dbd04c33161
+  - enabled: 0
     path: Assets/Scenes/Dust_koplenov.unity
     guid: 997f7e5708e7437468ec9ba31b03b069
+  - enabled: 1
+    path: Assets/Scenes/Dust.unity
+    guid: 4ff0a5c11491e1242832897ef0df303a
   m_configObjects: {}

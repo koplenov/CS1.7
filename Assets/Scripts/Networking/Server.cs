@@ -242,6 +242,12 @@ public class TcpServer
                         connect.Send(recBuf);
                     }
                     break;
+                case ChanelID.Damage:
+                    foreach (var connect in clientSockets)
+                    {
+                        connect.Send(recBuf);
+                    }
+                    break;
                 default:
                     string text = Encoding.Unicode.GetString(recBuf);
                     Debug.Log("Received Text: " + text);

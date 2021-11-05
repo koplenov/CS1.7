@@ -38,7 +38,7 @@ public class MenuSession : MonoBehaviour
         
         PlayerPrefs.SetInt("isServer", serverToggle.isOn ? 1 : 0) ;
 
-        SceneManager.LoadScene("Dust_koplenov", LoadSceneMode.Single);
+        SceneManager.LoadScene("Dust", LoadSceneMode.Single);
     }
 
 

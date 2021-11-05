@@ -475,7 +475,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f45facc01772ba47a9ae17bb7061b71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  character: {fileID: 2635128247767192238}
+  character: {fileID: 0}
   groundCheck: {fileID: 2638966753922722354}
   stepAudio: {fileID: 741379068480251613}
   runningAudio: {fileID: 2499559260410578864}
@@ -678,9 +678,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gunPoint: {fileID: 0}
-  knife: {fileID: 0}
+  knife: {fileID: 1204840987886025058}
   pistol: {fileID: 1417250744}
   mainGun: {fileID: 629031009}
+  selfState: {fileID: 0}
+  decalGameObject: {fileID: 4946529014367565059, guid: fff1a2cb8dc926b4db07a72f0d67c38e, type: 3}
 --- !u!1 &2669752812033588648
 GameObject:
   m_ObjectHideFlags: 0
@@ -725,7 +727,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   distanceThreshold: 0.15
-  isGrounded: 1
+  isGrounded: 0
 --- !u!1 &2669985629277073560
 GameObject:
   m_ObjectHideFlags: 0
@@ -818,10 +820,11 @@ GameObject:
   - component: {fileID: 2668179546645751962}
   - component: {fileID: 2661624448397688096}
   - component: {fileID: 2722891590440038932}
-  - component: {fileID: 2635128247767192238}
   - component: {fileID: 2638953936934278998}
   - component: {fileID: 2638549540403350396}
   - component: {fileID: 7991508405653420287}
+  - component: {fileID: 1560926034}
+  - component: {fileID: 1935443786}
   m_Layer: 0
   m_Name: First Person Controller
   m_TagString: Untagged
@@ -878,22 +881,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 80
   m_CollisionDetection: 1
---- !u!114 &2635128247767192238
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2670626548256207666}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 97fca36bd81de7c4cafce7bbf02ca611, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 5
-  canRun: 1
-  runSpeed: 9
-  runningKey: 304
 --- !u!114 &2638953936934278998
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -921,7 +908,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   key: 306
-  movement: {fileID: 2635128247767192238}
+  movement: {fileID: 0}
   movementSpeed: 2
   headToLower: {fileID: 2667897303729819514}
   crouchYHeadPosition: 1
@@ -967,6 +954,43 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1560926034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2670626548256207666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc80590d1ee004f4aae1e82a1a73cf3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  move: {x: 0, y: 0, z: 0}
+  speed: 8
+  targetMovingSpeed: 0
+  canRun: 1
+  runSpeed: 16
+  forwardRunKey: 119
+  backRunKey: 115
+  leftRunKey: 97
+  rightRunKey: 100
+  speedKey: 304
+--- !u!114 &1935443786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2670626548256207666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d758430d98a178f42a95d46cec3f7d06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hp: 100
+  armor: 0
+  damage: 0
 --- !u!1 &4488074002068373832
 GameObject:
   m_ObjectHideFlags: 0

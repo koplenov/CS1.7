@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 17198947973705220}
   - component: {fileID: 2067815814313854938}
   - component: {fileID: 7609924938462227152}
-  - component: {fileID: 1913314858381099813}
   m_Layer: 0
   m_Name: Decal
   m_TagString: Untagged
@@ -52,7 +51,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8ad9ea15bbba1204da50cf9ad731a230, type: 2}
+  - {fileID: 2100000, guid: c438e5c679f1be040a135443008e2fce, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -81,32 +80,4 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3950013702259086567}
-  m_Mesh: {fileID: 0}
---- !u!114 &1913314858381099813
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3950013702259086567}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1208bbe937c3a54488f1d85a7931055a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DecalAsset: {fileID: 11400000, guid: 6d713e863e09f3541871396ed1734ca3, type: 2}
-  Opacity: 1
-  ZFadeDistance: 0.1
-  MinAngleFadeDegrees: 83
-  MaxAngleFadeDegrees: 85
-  IsFlipU: 0
-  IsFlipV: 0
-  DrawOrder: 0
-  ShouldUseSceneStaticMeshes: 0
-  MeshesToProjectAgainst:
-  - {fileID: 0}
-  ShouldReprojectOnMove: 0
-  positionOfProjection: {x: -5.751, y: 2.4734, z: -8.377}
-  scaleOfProjection: {x: 0.1, y: 0.1, z: 1}
-  rotationOfProjection: {x: 0, y: 0, z: 0, w: 1}
-  isMeshUnprojected: 0
+  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}

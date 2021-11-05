@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028334, g: 0.2257134, b: 0.30692226, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0.99999905, b: 0.99999905, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -294,26 +294,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 796720124, guid: f5d9dd43293ba204ea8a90b4df65ad31, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1162748061, guid: f5d9dd43293ba204ea8a90b4df65ad31, type: 3}
-      propertyPath: knife
-      value: 
-      objectReference: {fileID: 200953832}
-    - target: {fileID: 1162748061, guid: f5d9dd43293ba204ea8a90b4df65ad31, type: 3}
-      propertyPath: decalMesh
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 1162748061, guid: f5d9dd43293ba204ea8a90b4df65ad31, type: 3}
       propertyPath: decalGameObject
       value: 
       objectReference: {fileID: 913516819}
-    - target: {fileID: 832149484925093642, guid: f5d9dd43293ba204ea8a90b4df65ad31, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2668179546645751962, guid: f5d9dd43293ba204ea8a90b4df65ad31, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -364,17 +348,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f5d9dd43293ba204ea8a90b4df65ad31, type: 3}
---- !u!114 &200953832 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1204840987886025058, guid: f5d9dd43293ba204ea8a90b4df65ad31, type: 3}
-  m_PrefabInstance: {fileID: 167984384}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 922d7e81d37d14e4f9e623711ebbf149, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &270589371 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2667897303729819514, guid: f5d9dd43293ba204ea8a90b4df65ad31, type: 3}
