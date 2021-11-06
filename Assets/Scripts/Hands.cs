@@ -109,14 +109,14 @@ public class Hands : MonoBehaviour
         // content bytes
         byte[] data = Data.ObjectToByteArray( new SpawnDecal(Client.nick, hitInfoPoint, hitInfoNormal));
         data = Packer.CombinePacket(ChanelID.SpawnDecal, data);
-        Network.SendTcpData(data);
+        Network.SendUdpData(data);
     }
     public static void ApplyWeapon(int weapon)
     {
         // content bytes
         byte[] data = Data.ObjectToByteArray(new ChangeWeapon(Client.nick, weapon));
         data = Packer.CombinePacket(ChanelID.ChangeWeapon, data);
-        Network.SendTcpData(data);
+        Network.SendUdpData(data);
     }
     
     #region GUI

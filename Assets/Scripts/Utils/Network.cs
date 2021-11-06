@@ -2,9 +2,11 @@
 {
     public static class Network
     {
-        public static void SendTcpData(byte[] data)
+        public static void SendUdpData(byte[] data)
         {
-            Client.Instance.SendTcpData(data);
+            Client.Instance.SendUdpData(data);
         }
+        
+        public const int BUFFER_SIZE = 2048;
     }
 }

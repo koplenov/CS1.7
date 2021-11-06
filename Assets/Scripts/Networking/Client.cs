@@ -16,17 +16,17 @@ public class Client : MonoBehaviour
     public GameObject server;
     public Hands hands;
 
+    private Thread udpClientThread;
     void Awake()
     {
         Instance = this;
-
         AwakeUdp();
     }
 
     void Start()
     {
-        StartUdp();
-        StartTcp();
+        udpClientThread = new Thread(StartUdp);
+        udpClientThread.Start();
         Debug.Log("Client started");
     }
 
@@ -38,21 +38,18 @@ public class Client : MonoBehaviour
     private void Update()
     {
         UpdateUdp();
-        UpdateTcp();
     }
 
     private void OnApplicationQuit()
     {
         CloseUdp();
-        CloseTcp();
+        udpClientThread.Abort();
     }
 
     #region UDP
 
-    private static Thread _listeningThread;
     public static string nick;
     private IPEndPoint _remoteAddr;
-    private UdpClient _sender;
 
     void AwakeUdp()
     {
@@ -61,13 +58,13 @@ public class Client : MonoBehaviour
         if (PlayerPrefs.GetInt("isServer", 1) == 1)
         {
             server.SetActive(true);
-            _remoteAddr = new IPEndPoint(IPAddress.Parse("127.0.0.1"), UdpServer.Port);
+            _remoteAddr = new IPEndPoint(IPAddress.Parse("127.0.0.1"), NewServer.Port);
             Debug.Log("UDP Client-Server mode");
         }
         else
         {
             server.SetActive(false);
-            _remoteAddr = new IPEndPoint(IPAddress.Parse(prefIp), UdpServer.Port);
+            _remoteAddr = new IPEndPoint(IPAddress.Parse(prefIp), NewServer.Port);
             Debug.Log("UDP Client only mode");
         }
 
@@ -76,53 +73,172 @@ public class Client : MonoBehaviour
         bufferPlayer = new NetPlayer(nick);
     }
 
-    private void StartUdp()
+    public EndPoint epServer;
+    public Socket clientSocket; //The main client socket
+    byte[] byteData = new byte[Utils.Network.BUFFER_SIZE];
+    private void OnReceive(IAsyncResult ar)
     {
-        _sender = new UdpClient();
-        _sender.Connect(_remoteAddr);
-
-        _listeningThread = new Thread(new ThreadStart(async delegate
+        try
         {
-            while (true)
+            int bytes = clientSocket.EndReceive(ar);
+
+            //Convert the bytes received into an object of type Data
+            var packet = Packer.UnPack(byteData, bytes);
+
+            //Accordingly process the message received
+            switch (packet.chanelID)
             {
-                //byte[] data = _sender.Receive(ref _remoteAddr);
-                UdpReceiveResult hona = await _sender.ReceiveAsync().ConfigureAwait(false);
-                byte[] data = hona.Buffer;
-
-                // TODO implement game logick
-                NetPlayer[] players = Data.ByteArrayToObject(data) as NetPlayer[];
-
-                lock (playerTable)
-                {
-                    foreach (var np in players)
+                case ChanelID.Login:
+                    
+                    Login login = Data.ByteArrayToObject(packet.data) as Login;
+                    Debug.LogWarning("Client: new player: " + login.nick);
+                    
+                    break;
+                case ChanelID.PlayerPosition:
+                    
+                    NetPlayer[] players = Data.ByteArrayToObject(packet.data) as NetPlayer[];
+                    
+                    lock (playerTable)
                     {
-                        if (np is null)
-                            continue;
-
-                        playerTable[np.nick] = np;
-                        /*
-                         * Debug.Log("From server: Nick:" + np.nick + " Pos: " + np.Position + " Rot: " + np.Rotation);
-                         */
+                        foreach (var np in players)
+                        {
+                            if (np is null)
+                                continue;
+                            playerTable[np.nick] = np;
+                        }
                     }
-                }
-            }
-        }));
+                    
+                    break;
+                case ChanelID.ChangeWeapon:
+                    
+                    ChangeWeapon changeWeapon = (ChangeWeapon) Data.ByteArrayToObject(packet.data);
+                    if (changeWeapon.nick != Client.nick)
+                    {
+                        Debug.Log("Смена оружки на " + changeWeapon.weapon + " у " + changeWeapon.nick);
+                        ((NetPlayerData) dataPlayers[changeWeapon.nick]).botHands.ApplyWeapon(changeWeapon.weapon);
+                    }
 
-        _listeningThread.Start();
+                    break;
+                case ChanelID.SpawnDecal:
+                    
+                    SpawnDecal spawnDecal = (SpawnDecal) Data.ByteArrayToObject(packet.data);
+                    hands.SpawnDecal(spawnDecal);
+                    
+                    break;
+                case ChanelID.Damage:
+                    
+                    //Хто надамажил меня? и насколько?
+                    SendDamage sendDamage = (SendDamage) Data.ByteArrayToObject(packet.data);
+                    if (sendDamage.analDamager == Client.nick)
+                    {
+                        Debug.Log("Ты попал мужик...");
+                    }
+
+                    if (sendDamage.anal == Client.nick)
+                    {
+                        Debug.Log("Ты маслину поймал мужик...");
+                        hands.selfState.hp -= sendDamage.damage;
+                    }
+
+                    Debug.Log($"anal {sendDamage.anal}, nick {Client.nick} , analDamager {sendDamage.analDamager}");
+
+                    break;
+                default:
+                    string message = Encoding.Unicode.GetString(packet.data);
+                    Debug.LogWarning("Server says: " + message);
+                    Debug.LogWarningFormat("Это был пакет {0} канала", packet.chanelID);
+                    break;
+            }
+            
+            byteData = new byte[Utils.Network.BUFFER_SIZE];
+            //Start listening to receive more data from the user
+            clientSocket.BeginReceiveFrom(byteData, 0, Utils.Network.BUFFER_SIZE, SocketFlags.None, ref epServer,
+                OnReceive, null);
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Server: {ex.Message}, {ex.Source}, {ex.StackTrace}, {ex.Data}");
+        }
     }
 
-    public GameObject targetPlayer;
-    public Transform XRot;
-    public Transform YRot;
+    private void StartUdp()
+    {
+        try
+        {
+            //Using UDP sockets
+            clientSocket = new Socket(AddressFamily.InterNetwork,
+                SocketType.Dgram, ProtocolType.Udp);
 
-    private NetPlayer bufferPlayer;
+            //IP address of the server machine
+            IPAddress ipAddress = _remoteAddr.Address;
+            //Server is listening on port 1000
+            IPEndPoint ipEndPoint = new IPEndPoint(ipAddress, NewServer.Port);
+
+            epServer = (EndPoint) ipEndPoint;
+            
+            
+            
+            
+            
+            Login login = new Login(nick);
+            // content bytes
+            byte[] tempBytes = Data.ObjectToByteArray(login);
+            // bytes to send or bytes from server
+            byteData = Packer.CombinePacket(ChanelID.Login, tempBytes);
+            //Login to the server
+            clientSocket.BeginSendTo(byteData, 0, byteData.Length,
+                SocketFlags.None, epServer, OnSend, null);
+            
+            
+            byteData = new byte[Utils.Network.BUFFER_SIZE];
+            //Start listening to the data asynchronously
+            clientSocket.BeginReceiveFrom(byteData,
+                0, Utils.Network.BUFFER_SIZE,
+                SocketFlags.None,
+                ref epServer,
+                OnReceive,
+                null);
+        }
+        catch (Exception ex)
+        {
+            Debug.Log($"Server: {ex.Message}");
+        }
+    }
+
+    private void OnSend(IAsyncResult ar)
+    {
+        try
+        {
+            clientSocket.EndSend(ar);
+        }
+        catch (Exception ex)
+        {
+            Debug.Log($"Server: {ex.Message}");
+        }
+    }
 
     public void SendUdpData(byte[] data)
     {
-        //_sender.Send(data, data.Length);
-        _sender.SendAsync(data, data.Length);
+        try
+        {
+            clientSocket.BeginSendTo(data, 0, data.Length,
+                SocketFlags.None, epServer, OnSend, null);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Client: {ex.Message}, {ex.Source}, {ex.StackTrace}, {ex.Data}");
+        }
     }
 
+    
+    public GameObject targetPlayer;
+    public Transform XRot;
+    public Transform YRot;
+    
+    private NetPlayer bufferPlayer;
     private void FixedUpdateUdp()
     {
         // TODO implement client logick (send position, etc)
@@ -130,7 +246,8 @@ public class Client : MonoBehaviour
         bufferPlayer.Rotation = new Vector3(XRot.rotation.eulerAngles.x, YRot.rotation.eulerAngles.y);
 
         byte[] outputBytes = Data.ObjectToByteArray(bufferPlayer); // the most important bytes)0
-        _sender.Send(outputBytes, outputBytes.Length);
+        byte[] outputValidBytes = Packer.CombinePacket(ChanelID.PlayerPosition, outputBytes);
+        SendUdpData(outputValidBytes);
     }
 
     private readonly Hashtable playerTable = new Hashtable();
@@ -178,9 +295,16 @@ public class Client : MonoBehaviour
 
     private void CloseUdp()
     {
+        // Send Logout command
+        Logout login = new Logout(nick);
+        byte[] tempBytes = Data.ObjectToByteArray(login);
+        byteData = Packer.CombinePacket(ChanelID.Logout, tempBytes);
+        clientSocket.BeginSendTo(byteData, 0, byteData.Length,
+            SocketFlags.None, epServer, OnSend, null);
+        
         try
         {
-            _sender.Close();
+            clientSocket.Close();
         }
         catch (Exception e)
         {
@@ -190,171 +314,14 @@ public class Client : MonoBehaviour
         // You must close the udp listener
         try
         {
-            _sender.Dispose();
+            clientSocket.Dispose();
         }
         catch (Exception e)
         {
             Debug.LogError(e.Message);
         }
 
-        _listeningThread.Abort();
-
         Debug.Log("Client stopped");
-    }
-
-    #endregion
-
-    #region TCP
-
-    private Socket clientSocket;
-    private byte[] buffer;
-
-    void StartTcp()
-    {
-        clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        // Connect to the specified host.
-        string prefIp = PlayerPrefs.GetString("ip", "127.0.0.1");
-        IPEndPoint endPoint;
-        if (PlayerPrefs.GetInt("isServer", 1) == 1)
-        {
-            endPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), UdpServer.Port);
-            Debug.Log("TCP Client-Server mode");
-        }
-        else
-        {
-            endPoint = new IPEndPoint(IPAddress.Parse(prefIp), UdpServer.Port);
-            Debug.Log("TCP Client only mode");
-        }
-
-        clientSocket.BeginConnect(endPoint, ConnectCallback, null);
-    }
-
-    private void UpdateTcp()
-    {
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            var data = Encoding.Unicode.GetBytes("get time");
-            clientSocket.Send(data);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Y))
-        {
-            var data = Encoding.Unicode.GetBytes("GG");
-            clientSocket.Send(data);
-        }
-    }
-
-    private void ConnectCallback(IAsyncResult AR)
-    {
-        try
-        {
-            clientSocket.EndConnect(AR);
-            buffer = new byte[clientSocket.ReceiveBufferSize];
-            clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, ReceiveCallback, null);
-        }
-        catch (SocketException ex)
-        {
-            Debug.LogError(ex.Message);
-        }
-        catch (ObjectDisposedException ex)
-        {
-            Debug.LogError(ex.Message);
-        }
-    }
-
-    private void ReceiveCallback(IAsyncResult AR)
-    {
-        try
-        {
-            int received = clientSocket.EndReceive(AR);
-
-            if (received == 0)
-            {
-                return;
-            }
-
-            try
-            {
-                var packet = Packer.UnPack(buffer, received);
-
-                //#
-                switch (packet.chanelID)
-                {
-                    case ChanelID.ChangeWeapon:
-                        ChangeWeapon changeWeapon = (ChangeWeapon) Data.ByteArrayToObject(packet.data);
-                        if (changeWeapon.nick != Client.nick)
-                        {
-                            Debug.Log("Смена оружки на " + changeWeapon.weapon + " у " + changeWeapon.nick);
-                            ((NetPlayerData) dataPlayers[changeWeapon.nick]).botHands.ApplyWeapon(changeWeapon.weapon);
-                        }
-
-                        break;
-                    case ChanelID.SpawnDecal:
-                        SpawnDecal spawnDecal = (SpawnDecal) Data.ByteArrayToObject(packet.data);
-                        hands.SpawnDecal(spawnDecal);
-                        break;
-                    case ChanelID.Damage:
-                        //Хто надамажил меня? и насколько?
-                        SendDamage sendDamage = (SendDamage) Data.ByteArrayToObject(packet.data);
-                        if (sendDamage.analDamager == Client.nick)
-                        {
-                            Debug.Log("Ты попал мужик...");
-                        }
-
-                        if (sendDamage.anal == Client.nick)
-                        {
-                            Debug.Log("Ты маслину поймал мужик...");
-                            hands.selfState.hp -= sendDamage.damage;
-                        }
-
-                        Debug.Log($"anal {sendDamage.anal}, nick {Client.nick} , analDamager {sendDamage.analDamager}");
-
-                        break;
-                    default:
-                        string message = Encoding.Unicode.GetString(buffer);
-                        Debug.LogWarning("Server says: " + message);
-                        Debug.LogWarningFormat("Это был пакет {0} канала", packet.chanelID);
-                        break;
-                }
-
-                //#
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-                throw;
-            }
-
-            // Start receiving data again.
-            clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, ReceiveCallback, null);
-        }
-        // Avoid Pokemon exception handling in cases like these.
-        catch (SocketException ex)
-        {
-            Debug.LogError(ex.Message);
-        }
-        catch (ObjectDisposedException ex)
-        {
-            Debug.Log("Client disconnect");
-            //Debug.LogError(ex.Message);
-        }
-    }
-
-    public void SendTcpData(byte[] data)
-    {
-        clientSocket.Send(data);
-    }
-
-    void CloseTcp()
-    {
-        try
-        {
-            clientSocket.Shutdown(SocketShutdown.Both);
-        }
-        finally
-        {
-            clientSocket.Close();
-        }
     }
 
     #endregion

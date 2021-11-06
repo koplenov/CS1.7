@@ -15,7 +15,7 @@ namespace Utils
             byte[] packetBytes = Packer.CombinePacket(ChanelID.Damage, testByted);
             
             // simple send bytes to server
-            Network.SendTcpData(packetBytes);
+            Network.SendUdpData(packetBytes);
         }
     }
 }

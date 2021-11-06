@@ -7,6 +7,8 @@ namespace Networking
 
     public class ChanelID
     {
+        public const int Logout = 201;
+        public const int Login = 200;
         public const int PlayerPosition = 0;
         public const int SpawnDecal = 6;
         public const int ChangeWeapon = 7;
@@ -64,6 +66,26 @@ namespace Networking
         {
             this.nick = nick;
             this.weapon = weapon;
+        }
+    }
+    
+    [Serializable]
+    public class Login
+    {
+        public string nick = String.Empty;
+        public Login(string nick)
+        {
+            this.nick = nick;
+        }
+    }
+    
+    [Serializable]
+    public class Logout
+    {
+        public string nick = String.Empty;
+        public Logout(string nick)
+        {
+            this.nick = nick;
         }
     }
 

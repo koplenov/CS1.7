@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BotHands : MonoBehaviour
@@ -5,8 +8,10 @@ public class BotHands : MonoBehaviour
     public GameObject knife;
     public GameObject pistol;
     public GameObject mainGun;
-    
-    public void ApplyWeapon(int weapon)
+
+    public void ApplyWeapon(int weapon) => eventsToRaise.Enqueue(() => _ApplyWeapon(weapon));
+
+    private void _ApplyWeapon(int weapon)
     {
         switch (weapon)
         {
@@ -28,4 +33,14 @@ public class BotHands : MonoBehaviour
         }
         Debug.LogWarning("change weapon applyed!");
     }
+
+    private void FixedUpdate()
+    {
+        while (eventsToRaise.Any())
+        {
+            eventsToRaise.Dequeue().Invoke();
+        }   
+    }
+    
+    Queue<Action> eventsToRaise = new Queue<Action>();
 }
