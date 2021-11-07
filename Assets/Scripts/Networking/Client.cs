@@ -94,6 +94,20 @@ public class Client : MonoBehaviour
                     Debug.LogWarning("Client: new player: " + login.nick);
                     
                     break;
+                
+                case ChanelID.Logout:
+                    Logout logout = Data.ByteArrayToObject(packet.data) as Logout;
+                    MainThreadBridge.DoInMainThread(() =>
+                    {
+                        lock (playerTable)
+                        {
+                            Destroy((GameObject) initedPlayers[logout.nick]);
+                            playerTable.Remove(logout.nick);
+                            initedPlayers.Remove(logout.nick);
+                        } 
+                    } );
+                    break;
+                
                 case ChanelID.PlayerPosition:
                     
                     NetPlayer[] players = Data.ByteArrayToObject(packet.data) as NetPlayer[];
@@ -293,7 +307,7 @@ public class Client : MonoBehaviour
         dataPlayers[player.nick] = settings;
     }
 
-    private void CloseUdp()
+    public void CloseUdp()
     {
         // Send Logout command
         Logout login = new Logout(nick);

@@ -137,6 +137,16 @@ public class NewServer
                     //When a user wants to log out of the server then we search for her 
                     //in the list of clients and close the corresponding connection
 
+                    Logout logout = Data.ByteArrayToObject(packet.data) as Logout;
+                    existPlayers.Remove(logout.nick);
+                    foreach (ClientInfo clientInfo in clientList)
+                    {
+                        //Send the message to all users
+                        serverSocket.BeginSendTo(byteData, 0, bytes, SocketFlags.None,
+                            clientInfo.endpoint,
+                            OnSend, clientInfo.endpoint);
+                    }
+
                     int nIndex = 0;
                     foreach (ClientInfo client in clientList)
                     {

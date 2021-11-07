@@ -30,6 +30,6 @@ public class Sample : MonoBehaviour
         }
         
         // simple send bytes to server
-        Network.SendTcpData(packetBytes);
+        Network.SendUdpData(packetBytes);
     }
 }
