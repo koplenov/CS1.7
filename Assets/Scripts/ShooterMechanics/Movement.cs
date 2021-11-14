@@ -19,9 +19,12 @@ public class Movement : MonoBehaviour
     public KeyCode rightRunKey = KeyCode.D;
     public KeyCode speedKey = KeyCode.LeftShift;
 
+    GroundCheck groundCheck;
+
     void Awake()
     {
         rigidbody = GetComponent<Rigidbody>();
+        groundCheck = GetComponentInChildren<GroundCheck>();
     }
 
 
@@ -56,7 +59,8 @@ public class Movement : MonoBehaviour
         }
         else
         {
-            rigidbody.velocity *= 0.9f ;
+            if (groundCheck.isGrounded == true) {rigidbody.velocity *= 0.9f;}
+         
         }
     }
 }
