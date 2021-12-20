@@ -102,12 +102,7 @@ public class StoreMenuChange : MonoBehaviour
         gun36.onClick.AddListener(delegate { OnGunClick(6,6); });
         
     }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.B)) {gunTypes.SetActive(!gunTypes.activeSelf);}
-    }
-
+    
     void OnTypeClick(int typeid)
     {
         switch (typeid)

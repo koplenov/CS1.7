@@ -13,6 +13,7 @@ namespace Networking
         public const int SpawnDecal = 6;
         public const int ChangeWeapon = 7;
         public const int Damage = 5;
+        public const int Respawn = 8;
     }
 
     #endregion
@@ -166,6 +167,15 @@ namespace Networking
         [SerializeField] public SVector rotation = new SVector(Vector3.zero);
     }
 
+    [Serializable]
+    public class Respawn
+    {
+        public string nick = String.Empty;
+        public Respawn(string nick)
+        {
+            this.nick = nick;
+        }
+    }
     [Serializable]
     public class SVector
     {

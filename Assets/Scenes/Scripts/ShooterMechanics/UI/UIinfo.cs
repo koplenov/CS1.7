@@ -16,7 +16,7 @@ public class UIinfo : MonoBehaviour
     
     void Update()
     {
-        hpview.text = "HP: " + info.hp;
-        damageview.text = "Damage: " + info.damage;
+        hpview.text = "HP: " + Client.Instance.hp;
+        damageview.text = "$ " + Client.Instance.money;
     }
 }

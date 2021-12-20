@@ -20,13 +20,18 @@ public class Hands : MonoBehaviour
     private void Start()
     {
         curentWeapon = knife;
+        
+        damage = 5;
     }
 
+    public int damage;
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             curentWeapon = knife;
+
+            damage = 5;
             
             knife.gameObject.SetActive(true);
             pistol.gameObject.SetActive(false);
@@ -39,6 +44,8 @@ public class Hands : MonoBehaviour
         {
             curentWeapon = pistol;
             
+            damage = 2;
+            
             knife.gameObject.SetActive(false);
             pistol.gameObject.SetActive(true);
             mainGun.gameObject.SetActive(false);
@@ -49,6 +56,8 @@ public class Hands : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             curentWeapon = mainGun;
+            
+            damage = 4;
             
             knife.gameObject.SetActive(false);
             pistol.gameObject.SetActive(false);
@@ -73,9 +82,8 @@ public class Hands : MonoBehaviour
                 if (hitInfo.collider.CompareTag("NetPlayer"))
                 {
                     NetPlayerData netData = hitInfo.collider.GetComponent<NetPlayerData>();
-                    GameUtils.SendDamage(Client.nick,netData.nick, 1);
-                    netData.botState.ApplyDamage();
-                    selfState.ApplyDamage();
+                    GameUtils.SendDamage(Client.nick,netData.nick,damage);
+                    netData.botState.ApplyDamage(damage);
                     Debug.Log("Fired");
                 }
             }

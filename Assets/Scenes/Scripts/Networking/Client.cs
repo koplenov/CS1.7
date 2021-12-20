@@ -9,7 +9,7 @@ using TMPro;
 using UnityEngine;
 using Utils;
 
-public class Client : MonoBehaviour
+public class Client : Player
 {
     public static Client Instance;
 
@@ -17,8 +17,10 @@ public class Client : MonoBehaviour
     public Hands hands;
 
     private Thread udpClientThread;
-    void Awake()
+
+    new void Awake()
     {
+        base.Awake();
         Instance = this;
         AwakeUdp();
     }
@@ -76,6 +78,7 @@ public class Client : MonoBehaviour
     public EndPoint epServer;
     public Socket clientSocket; //The main client socket
     byte[] byteData = new byte[Utils.Network.BUFFER_SIZE];
+
     private void OnReceive(IAsyncResult ar)
     {
         try
@@ -89,12 +92,12 @@ public class Client : MonoBehaviour
             switch (packet.chanelID)
             {
                 case ChanelID.Login:
-                    
+
                     Login login = Data.ByteArrayToObject(packet.data) as Login;
                     Debug.LogWarning("Client: new player: " + login.nick);
-                    
+
                     break;
-                
+
                 case ChanelID.Logout:
                     Logout logout = Data.ByteArrayToObject(packet.data) as Logout;
                     MainThreadBridge.DoInMainThread(() =>
@@ -104,14 +107,14 @@ public class Client : MonoBehaviour
                             Destroy((GameObject) initedPlayers[logout.nick]);
                             playerTable.Remove(logout.nick);
                             initedPlayers.Remove(logout.nick);
-                        } 
-                    } );
+                        }
+                    });
                     break;
-                
+
                 case ChanelID.PlayerPosition:
-                    
+
                     NetPlayer[] players = Data.ByteArrayToObject(packet.data) as NetPlayer[];
-                    
+
                     lock (playerTable)
                     {
                         foreach (var np in players)
@@ -121,10 +124,10 @@ public class Client : MonoBehaviour
                             playerTable[np.nick] = np;
                         }
                     }
-                    
+
                     break;
                 case ChanelID.ChangeWeapon:
-                    
+
                     ChangeWeapon changeWeapon = (ChangeWeapon) Data.ByteArrayToObject(packet.data);
                     if (changeWeapon.nick != Client.nick)
                     {
@@ -134,36 +137,50 @@ public class Client : MonoBehaviour
 
                     break;
                 case ChanelID.SpawnDecal:
-                    
+
                     SpawnDecal spawnDecal = (SpawnDecal) Data.ByteArrayToObject(packet.data);
                     hands.SpawnDecal(spawnDecal);
-                    
+
                     break;
                 case ChanelID.Damage:
-                    
+
                     //Хто надамажил меня? и насколько?
                     SendDamage sendDamage = (SendDamage) Data.ByteArrayToObject(packet.data);
                     if (sendDamage.analDamager == Client.nick)
                     {
                         Debug.Log("Ты попал мужик...");
+                        (dataPlayers[sendDamage.anal] as NetPlayerData).botState.ApplyDamage(sendDamage.damage);
+                        AddMoney();
+                        Debug.Log("На" + sendDamage.damage + " дамага");
                     }
 
                     if (sendDamage.anal == Client.nick)
                     {
                         Debug.Log("Ты маслину поймал мужик...");
-                        hands.selfState.hp -= sendDamage.damage;
+                        ApplyDamage(sendDamage.damage);
+                        Debug.Log("На" + sendDamage.damage + " дамага");
                     }
 
                     Debug.Log($"anal {sendDamage.anal}, nick {Client.nick} , analDamager {sendDamage.analDamager}");
 
                     break;
+
+                case ChanelID.Respawn:
+                    Respawn respawn = (Respawn) Data.ByteArrayToObject(packet.data);
+                    if (respawn.nick == Client.nick)
+                        eventsToRaise.Enqueue(() =>
+                        {
+                           targetPlayer.transform.position = new Vector3(0, 4, -2);
+                        });
+                    break;
+
                 default:
                     string message = Encoding.Unicode.GetString(packet.data);
                     Debug.LogWarning("Server says: " + message);
                     Debug.LogWarningFormat("Это был пакет {0} канала", packet.chanelID);
                     break;
             }
-            
+
             byteData = new byte[Utils.Network.BUFFER_SIZE];
             //Start listening to receive more data from the user
             clientSocket.BeginReceiveFrom(byteData, 0, Utils.Network.BUFFER_SIZE, SocketFlags.None, ref epServer,
@@ -192,11 +209,8 @@ public class Client : MonoBehaviour
             IPEndPoint ipEndPoint = new IPEndPoint(ipAddress, NewServer.Port);
 
             epServer = (EndPoint) ipEndPoint;
-            
-            
-            
-            
-            
+
+
             Login login = new Login(nick);
             // content bytes
             byte[] tempBytes = Data.ObjectToByteArray(login);
@@ -205,8 +219,8 @@ public class Client : MonoBehaviour
             //Login to the server
             clientSocket.BeginSendTo(byteData, 0, byteData.Length,
                 SocketFlags.None, epServer, OnSend, null);
-            
-            
+
+
             byteData = new byte[Utils.Network.BUFFER_SIZE];
             //Start listening to the data asynchronously
             clientSocket.BeginReceiveFrom(byteData,
@@ -247,12 +261,12 @@ public class Client : MonoBehaviour
         }
     }
 
-    
     public GameObject targetPlayer;
     public Transform XRot;
     public Transform YRot;
-    
+
     private NetPlayer bufferPlayer;
+
     private void FixedUpdateUdp()
     {
         // TODO implement client logick (send position, etc)
@@ -315,7 +329,7 @@ public class Client : MonoBehaviour
         byteData = Packer.CombinePacket(ChanelID.Logout, tempBytes);
         clientSocket.BeginSendTo(byteData, 0, byteData.Length,
             SocketFlags.None, epServer, OnSend, null);
-        
+
         try
         {
             clientSocket.Close();
